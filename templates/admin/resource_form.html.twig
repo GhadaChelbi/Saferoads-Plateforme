@@ -1,0 +1,87 @@
+{% extends 'layouts/portal.html.twig' %}
+
+{% block breadcrumb %}<a href="{{ path('admin_list', { section: 'ressources' }) }}" class="crumb">← Ressources</a>{% endblock %}
+{% block page_title %}Nouvelle ressource pédagogique{% endblock %}
+{% block page_subtitle %}Mini-CMS : catégoriser, associer un niveau, une thématique ou une campagne, joindre un fichier ou une vidéo.{% endblock %}
+
+{% block content %}
+<form method="post" enctype="multipart/form-data" class="form-grid" novalidate>
+    <input type="hidden" name="_token" value="{{ csrf_token('resource_new') }}">
+
+    <section class="panel span-2">
+        <h2>Contenu</h2>
+        <div class="field {{ errors.title is defined ? 'is-invalid' }}">
+            <label for="res_title">Titre</label>
+            <input id="res_title" name="res[title]" value="{{ values.title }}" required>
+            {% if errors.title is defined %}<p class="field-error">{{ errors.title }}</p>{% endif %}
+        </div>
+        <div class="field">
+            <label for="res_summary">Présentation</label>
+            <textarea id="res_summary" name="res[summary]" rows="5">{{ values.summary }}</textarea>
+        </div>
+        <div class="field-row">
+            <div class="field">
+                <label for="res_file">Fichier joint</label>
+                <input id="res_file" type="file" name="res_file" accept=".pdf,.pptx,.docx,.zip">
+            </div>
+            <div class="field {{ errors.video is defined ? 'is-invalid' }}">
+                <label for="res_video">Vidéo (URL d'intégration)</label>
+                <input id="res_video" type="url" name="res[video]" value="{{ values.video }}" placeholder="https://…">
+                {% if errors.video is defined %}<p class="field-error">{{ errors.video }}</p>{% endif %}
+            </div>
+        </div>
+    </section>
+
+    <aside class="panel">
+        <h2>Classement</h2>
+        <div class="field">
+            <label for="res_usage">Catégorie (usage)</label>
+            <select id="res_usage" name="res[usage]">
+                {% for k, u in usages %}<option value="{{ k }}" {{ values.usage == k ? 'selected' }}>{{ u.label }}</option>{% endfor %}
+            </select>
+        </div>
+        <div class="field">
+            <label for="res_type">Type</label>
+            <select id="res_type" name="res[type]">
+                {% for k, t in types %}<option value="{{ k }}" {{ values.type == k ? 'selected' }}>{{ t }}</option>{% endfor %}
+            </select>
+        </div>
+        <fieldset class="field">
+            <legend>Niveaux</legend>
+            <div class="checks">
+                {% for l in levels %}
+                    <label class="check"><input type="checkbox" name="res[levels][]" value="{{ l }}" {{ l in values.levels ? 'checked' }}> {{ l }}</label>
+                {% endfor %}
+            </div>
+        </fieldset>
+        <div class="field">
+            <label for="res_theme">Thématique</label>
+            <select id="res_theme" name="res[theme]">
+                <option value="">Aucune</option>
+                {% for k, t in themes %}<option value="{{ k }}" {{ values.theme == k ? 'selected' }}>{{ t }}</option>{% endfor %}
+            </select>
+        </div>
+        <div class="field">
+            <label for="res_campaign">Campagne</label>
+            <select id="res_campaign" name="res[campaign]">
+                <option value="">Aucune</option>
+                {% for c in campaigns %}<option value="{{ c.slug }}" {{ values.campaign == c.slug ? 'selected' }}>{{ c.name }}</option>{% endfor %}
+            </select>
+        </div>
+        <div class="field-row">
+            <div class="field">
+                <label for="res_date">Publication le</label>
+                <input id="res_date" type="date" name="res[publishAt]" value="{{ values.publishAt }}">
+            </div>
+            <div class="field">
+                <label for="res_status">Statut</label>
+                <select id="res_status" name="res[status]">
+                    <option value="brouillon" {{ values.status == 'brouillon' ? 'selected' }}>Brouillon</option>
+                    <option value="publiee" {{ values.status == 'publiee' ? 'selected' }}>Publiée</option>
+                </select>
+            </div>
+        </div>
+        <button class="btn btn-primary btn-block">Enregistrer la ressource</button>
+    </aside>
+</form>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends 'layouts/portal.html.twig' %}
+
+{% block breadcrumb %}<a href="{{ path('admin_dashboard') }}" class="crumb">← Back-office</a>{% endblock %}
+{% block page_title %}{{ icon }} {{ title }}{% endblock %}
+{% block page_subtitle %}{{ rows|length }} élément(s){% endblock %}
+{% block page_actions %}
+    {% if new %}
+        {% if newRoute is defined %}
+            <a href="{{ path(newRoute) }}" class="btn btn-primary">＋ {{ new }}</a>
+        {% else %}
+            <button type="button" class="btn btn-primary" disabled title="Disponible quand la base sera branchée">＋ {{ new }}</button>
+        {% endif %}
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+{% if note is defined %}<div class="flash flash-info">ℹ️ {{ note }}</div>{% endif %}
+
+<section class="panel" data-controller="search">
+    <div class="panel-head">
+        <input type="search" class="search" placeholder="Rechercher…" data-action="search#filter" aria-label="Rechercher dans la liste">
+    </div>
+    <div class="table-wrap">
+        <table class="data">
+            <thead><tr>{% for c in columns %}<th>{{ c }}</th>{% endfor %}<th class="num">Actions</th></tr></thead>
+            <tbody>
+                {% for row in rows %}
+                    <tr data-search-target="row" style="--i: {{ loop.index0 }}">
+                        {% for cell in row %}<td>{% if loop.first %}<strong>{{ cell }}</strong>{% else %}{{ cell }}{% endif %}</td>{% endfor %}
+                        <td class="num actions">
+                            <button type="button" class="icon-btn" title="Modifier" disabled>✏️</button>
+                            {% if key in ['ressources', 'communications'] %}
+                                <button type="button" class="icon-btn" title="Publier / dépublier" disabled>👁</button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <p class="empty" data-search-target="empty" hidden>Aucun résultat.</p>
+</section>
+{% endblock %}

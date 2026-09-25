@@ -1,0 +1,41 @@
+{% extends 'layouts/portal.html.twig' %}
+{% import '_macros.html.twig' as ui %}
+
+{% block breadcrumb %}<a href="{{ path('admin_dashboard') }}" class="crumb">← Back-office</a>{% endblock %}
+{% block page_title %}🎓 Administration du MOOC{% endblock %}
+{% block page_subtitle %}Créer des modules, ajouter des leçons, vidéos, PDF et quiz, publier et réordonner — sans intervention du développeur.{% endblock %}
+{% block page_actions %}<button type="button" class="btn btn-primary" disabled title="Disponible quand la base sera branchée">＋ Nouveau module</button>{% endblock %}
+
+{% block content %}
+<section class="kpis kpis-5">
+    {{ ui.kpi('Enseignants inscrits', stats.enrolled, '', null, '👩‍🏫') }}
+    {{ ui.kpi('Démarrages', stats.started, '', null, '▶') }}
+    {{ ui.kpi('Formations terminées', stats.completed, '', null, '🏁') }}
+    {{ ui.kpi('Progression moyenne', stats.average, '%', null, '📈') }}
+    {{ ui.kpi('Résultat moyen aux quiz', stats.quizScore, '%', null, '❓') }}
+</section>
+
+<section class="panel" data-controller="reorder">
+    <div class="panel-head">
+        <h2>Modules</h2>
+        <span class="muted">Réordonnez avec les flèches</span>
+    </div>
+    <ol class="admin-modules" data-reorder-target="list">
+        {% for m in modules %}
+            <li class="admin-module">
+                <span class="module-num">{{ m.number }}</span>
+                <span class="module-body">
+                    <strong>{{ m.title }}</strong>
+                    <small class="muted">{{ m.lessons|length }} leçons ({{ m.lessons|map(l => l.kind)|join(', ') }}) · quiz de {{ m.quiz|length }} questions</small>
+                </span>
+                <span class="pill pill-terminee">✓ Publié</span>
+                <span class="actions">
+                    <button type="button" class="icon-btn" data-action="reorder#up" aria-label="Monter">↑</button>
+                    <button type="button" class="icon-btn" data-action="reorder#down" aria-label="Descendre">↓</button>
+                    <button type="button" class="icon-btn" disabled title="Modifier">✏️</button>
+                </span>
+            </li>
+        {% endfor %}
+    </ol>
+</section>
+{% endblock %}

@@ -1,0 +1,129 @@
+{% extends 'base.html.twig' %}
+
+{#
+    Gabarit des espaces connectés : barre latérale selon le rôle + en-tête de page.
+    Blocs : page_title, page_subtitle, page_actions, content.
+#}
+
+{% block title %}{{ block('page_title') }} — Saferoads{% endblock %}
+
+{% block body %}
+{% set route = app.request.attributes.get('_route') %}
+{% set section = app.request.attributes.get('section') %}
+{% set me = demo.profile(app.user.userIdentifier) %}
+
+{# Menus par rôle : [libellé, route, préfixe de route actif, icône, paramètres] #}
+{% set navGroups = [] %}
+{% if is_granted('ROLE_ENSEIGNANT') %}
+    {% set navGroups = navGroups|merge([{ title: 'Mon espace', items: [
+        { label: 'Tableau de bord', route: 'teacher_dashboard', match: 'teacher_dashboard', icon: '🏠' },
+        { label: 'Mes sessions', route: 'teacher_sessions', match: 'teacher_session', icon: '🎮' },
+        { label: 'Mes résultats', route: 'teacher_results', match: 'teacher_results', icon: '📊' },
+    ]}]) %}
+{% endif %}
+{% if is_granted('ROLE_CHEF_ETABLISSEMENT') %}
+    {% set navGroups = navGroups|merge([{ title: 'Mon établissement', items: [
+        { label: "Vue d'ensemble", route: 'school_dashboard', match: 'school_dashboard', icon: '🏫' },
+        { label: 'Sessions', route: 'school_sessions', match: 'school_sessions', icon: '🎮' },
+    ]}]) %}
+{% endif %}
+{% if is_granted('ROLE_ENSEIGNANT') or is_granted('ROLE_CHEF_ETABLISSEMENT') %}
+    {% set navGroups = navGroups|merge([{ title: 'Pédagogie', items: [
+        { label: 'Ressources', route: 'resources_index', match: 'resources_', icon: '📚' },
+        { label: 'Formation MOOC', route: 'mooc_index', match: 'mooc_', icon: '🎓' },
+        { label: 'Messages', route: 'messages_index', match: 'messages_', icon: '✉️', badge: demo.unreadCount },
+    ]}]) %}
+{% endif %}
+{% if is_granted('ROLE_PILOTAGE') %}
+    {% set pilot = [
+        { label: 'Cockpit', route: 'pilot_dashboard', match: 'pilot_dashboard', icon: '🧭' },
+        { label: 'Établissements', route: 'pilot_establishments', match: 'pilot_establishments', icon: '🏫' },
+        { label: 'Campagnes', route: 'pilot_campaigns', match: 'pilot_campaign', icon: '📣' },
+    ] %}
+    {% if is_granted('ROLE_REPORTING') %}
+        {% set pilot = pilot|merge([{ label: 'Reporting & exports', route: 'pilot_reporting', match: 'pilot_reporting', icon: '📤' }]) %}
+    {% endif %}
+    {% set navGroups = navGroups|merge([{ title: 'Pilotage', items: pilot }]) %}
+{% endif %}
+{% if is_granted('ROLE_COMMUNICATION') %}
+    {% set navGroups = navGroups|merge([{ title: 'Communication', items: [
+        { label: 'Communications', route: 'com_index', match: 'com_', icon: '📨' },
+    ]}]) %}
+{% endif %}
+{% if is_granted('ROLE_BACKOFFICE') %}
+    {% set navGroups = navGroups|merge([{ title: 'Back-office', items: [
+        { label: "Vue d'ensemble", route: 'admin_dashboard', match: 'admin_dashboard', icon: '⚙️' },
+        { label: 'Enseignants', route: 'admin_list', params: { section: 'enseignants' }, icon: '👩‍🏫' },
+        { label: 'Établissements', route: 'admin_list', params: { section: 'etablissements' }, icon: '🏫' },
+        { label: 'Sessions', route: 'admin_list', params: { section: 'sessions' }, icon: '🎮' },
+        { label: 'Campagnes', route: 'admin_list', params: { section: 'campagnes' }, icon: '📣' },
+        { label: 'Ressources (CMS)', route: 'admin_list', params: { section: 'ressources' }, match: 'admin_resource', icon: '📚' },
+        { label: 'MOOC', route: 'admin_mooc', match: 'admin_mooc', icon: '🎓' },
+        { label: 'Rôles & permissions', route: 'admin_roles', match: 'admin_roles', icon: '🔐' },
+        { label: 'Qualité des données', route: 'admin_quality', match: 'admin_quality', icon: '🛡️' },
+    ]}]) %}
+{% endif %}
+
+<div class="shell" data-controller="sidebar">
+    <aside class="sidebar" data-sidebar-target="panel">
+        <a href="{{ path('app_home') }}" class="brand sidebar-brand">
+            <span class="brand-mark" aria-hidden="true"><span class="light"><i></i><i></i><i></i></span></span>
+            <span>Saferoads <small>Plateforme pro</small></span>
+        </a>
+
+        <nav class="side-nav" aria-label="Navigation principale">
+            {% for group in navGroups %}
+                <p class="side-title">{{ group.title }}</p>
+                {% for item in group.items %}
+                    {% if item.params is defined %}
+                        {% set active = (route == 'admin_list' and section == item.params.section) or (item.match is defined and route starts with item.match) %}
+                    {% else %}
+                        {% set active = route starts with item.match %}
+                    {% endif %}
+                    <a href="{{ path(item.route, item.params ?? {}) }}" class="{{ active ? 'is-active' }}" {% if active %}aria-current="page"{% endif %}>
+                        <span class="side-icon" aria-hidden="true">{{ item.icon }}</span>
+                        <span>{{ item.label }}</span>
+                        {% if item.badge is defined and item.badge > 0 %}<span class="side-badge">{{ item.badge }}</span>{% endif %}
+                    </a>
+                {% endfor %}
+            {% endfor %}
+        </nav>
+
+        <div class="side-user">
+            <span class="avatar" aria-hidden="true">{{ me.name|split(' ')|map(p => p|first)|join }}</span>
+            <span class="side-user-text">
+                <strong>{{ me.name }}</strong>
+                <small>{{ me.role }}</small>
+            </span>
+            <a href="{{ path('app_logout') }}" class="icon-btn" title="Se déconnecter" aria-label="Se déconnecter">⎋</a>
+        </div>
+    </aside>
+
+    <div class="shell-main" data-controller="reveal">
+        <header class="page-head">
+            <button type="button" class="icon-btn menu-btn" data-action="sidebar#toggle" aria-label="Ouvrir le menu">☰</button>
+            <div class="page-head-text">
+                {% block breadcrumb %}{% endblock %}
+                <h1>{% block page_title %}{% endblock %}</h1>
+                <p class="page-sub">{% block page_subtitle %}{% endblock %}</p>
+            </div>
+            <div class="page-actions">{% block page_actions %}{% endblock %}</div>
+        </header>
+
+        {% for type, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="flash flash-{{ type }}" role="status">{{ message }}</div>
+            {% endfor %}
+        {% endfor %}
+
+        <main class="page-body reveal">
+            {% block content %}{% endblock %}
+        </main>
+
+        <footer class="portal-foot">
+            Données de démonstration statiques · Aucune donnée nominative d'élève · Hébergement en France prévu
+        </footer>
+    </div>
+    <div class="shell-overlay" data-action="click->sidebar#toggle"></div>
+</div>
+{% endblock %}

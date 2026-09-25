@@ -1,0 +1,63 @@
+security:
+    password_hashers:
+        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
+
+    # Comptes professionnels de démonstration (mot de passe : demo1234).
+    # À remplacer par un provider Doctrine (entité PROFESSIONAL_USER) quand la base sera branchée.
+    providers:
+        users_in_memory:
+            memory:
+                users:
+                    enseignant@saferoads.fr: { password: '$2y$12$BeNy42bukJ4o2p4W2foJaOzO20wr8zbrxWJ1J6amssxmjK1.Erzb2', roles: ['ROLE_ENSEIGNANT'] }
+                    chef@saferoads.fr:       { password: '$2y$12$BeNy42bukJ4o2p4W2foJaOzO20wr8zbrxWJ1J6amssxmjK1.Erzb2', roles: ['ROLE_CHEF_ETABLISSEMENT'] }
+                    dsr@saferoads.fr:        { password: '$2y$12$BeNy42bukJ4o2p4W2foJaOzO20wr8zbrxWJ1J6amssxmjK1.Erzb2', roles: ['ROLE_DSR'] }
+                    admin@saferoads.fr:      { password: '$2y$12$BeNy42bukJ4o2p4W2foJaOzO20wr8zbrxWJ1J6amssxmjK1.Erzb2', roles: ['ROLE_ADMIN'] }
+
+    # Permissions granulaires (§21 de la note de cadrage).
+    # Les droits DSR ne sont PAS assimilés aux droits Admin : la DSR n'a pas le back-office.
+    role_hierarchy:
+        ROLE_DSR:   [ROLE_PILOTAGE, ROLE_REPORTING, ROLE_COMMUNICATION]
+        ROLE_ADMIN: [ROLE_PILOTAGE, ROLE_REPORTING, ROLE_COMMUNICATION, ROLE_BACKOFFICE]
+
+    firewalls:
+        dev:
+            pattern: ^/(_profiler|_wdt|assets|build)/
+            security: false
+        main:
+            lazy: true
+            provider: users_in_memory
+            form_login:
+                login_path: app_login
+                check_path: app_login
+                enable_csrf: true
+                username_parameter: email
+                password_parameter: password
+                default_target_path: app_space
+                always_use_default_target_path: true
+            logout:
+                path: app_logout
+                target: app_home
+            login_throttling:
+                max_attempts: 5
+
+    # Seule la première règle qui correspond s'applique.
+    access_control:
+        - { path: ^/connexion, roles: PUBLIC_ACCESS }
+        - { path: ^/enseignant, roles: ROLE_ENSEIGNANT }
+        - { path: ^/etablissement, roles: ROLE_CHEF_ETABLISSEMENT }
+        - { path: ^/messages, roles: [ROLE_ENSEIGNANT, ROLE_CHEF_ETABLISSEMENT] }
+        - { path: ^/(ressources|formation), roles: [ROLE_ENSEIGNANT, ROLE_CHEF_ETABLISSEMENT, ROLE_BACKOFFICE] }
+        - { path: ^/pilotage/reporting, roles: ROLE_REPORTING }
+        - { path: ^/pilotage, roles: ROLE_PILOTAGE }
+        - { path: ^/communication, roles: ROLE_COMMUNICATION }
+        - { path: ^/admin, roles: ROLE_BACKOFFICE }
+        - { path: ^/espace, roles: IS_AUTHENTICATED_FULLY }
+
+when@test:
+    security:
+        password_hashers:
+            Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface:
+                algorithm: auto
+                cost: 4
+                time_cost: 3
+                memory_cost: 10

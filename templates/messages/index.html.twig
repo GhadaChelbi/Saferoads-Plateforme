@@ -1,0 +1,30 @@
+{% extends 'layouts/portal.html.twig' %}
+{% import '_macros.html.twig' as ui %}
+
+{% block page_title %}Messages & actualités{% endblock %}
+{% block page_subtitle %}Communications de la DSR et de Saferoads : messages, nouvelles ressources, nouveaux modules du MOOC.{% endblock %}
+
+{% block content %}
+<section class="panel">
+    <ul class="inbox">
+        {% for id, m in messages %}
+            <li style="--i: {{ loop.index0 }}">
+                <a href="{{ path('messages_show', { id: id }) }}" class="inbox-row {{ m.read ? '' : 'is-unread' }}">
+                    <span class="inbox-icon" aria-hidden="true">{{ ui.msg_icon(m.kind) }}</span>
+                    <span class="inbox-body">
+                        <strong>{{ m.title }}</strong>
+                        <small class="muted">{{ (m.body|split("\n")|first)|length > 110 ? (m.body|split("\n")|first)|slice(0, 110) ~ '…' : m.body|split("\n")|first }}</small>
+                    </span>
+                    <span class="inbox-meta">
+                        <small>{{ m.source }}</small>
+                        <small class="muted">{{ m.date|date('d/m/Y') }}</small>
+                        {% if m.read %}<span class="pill">Lu</span>{% else %}<span class="pill pill-en_cours">● Nouveau</span>{% endif %}
+                    </span>
+                </a>
+            </li>
+        {% else %}
+            <li class="empty">Aucun message.</li>
+        {% endfor %}
+    </ul>
+</section>
+{% endblock %}

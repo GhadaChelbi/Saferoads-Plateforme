@@ -1,0 +1,38 @@
+{% extends 'layouts/portal.html.twig' %}
+{% import '_macros.html.twig' as ui %}
+
+{% block page_title %}Back-office Saferoads{% endblock %}
+{% block page_subtitle %}Gestion des référentiels, des contenus, du MOOC, des communications, des rôles et des permissions.{% endblock %}
+
+{% block content %}
+<section class="kpis">
+    {{ ui.kpi('Sessions', stats.sessions, '', stats.done ~ ' terminées', '🎮') }}
+    {{ ui.kpi('Joueurs', stats.participants, '', 'agrégés', '👥') }}
+    {{ ui.kpi('Enseignants inscrits au MOOC', mooc.enrolled, '', mooc.completed ~ ' formation(s) terminée(s)', '🎓') }}
+    {{ ui.kpi('Progression MOOC moyenne', mooc.average, '%', null, '📈') }}
+</section>
+
+<h2 class="section-title">Gestion</h2>
+<div class="tiles">
+    {% for key, s in sections %}
+        <a href="{{ path('admin_list', { section: key }) }}" class="tile" style="--i: {{ loop.index0 }}">
+            <span class="tile-icon" aria-hidden="true">{{ s.icon }}</span>
+            <strong>{{ s.title }}</strong>
+            <span class="muted"><span data-count="{{ s.count }}">{{ s.count }}</span> élément(s)</span>
+        </a>
+    {% endfor %}
+    <a href="{{ path('admin_mooc') }}" class="tile">
+        <span class="tile-icon" aria-hidden="true">🎓</span><strong>MOOC</strong><span class="muted">Modules, leçons, quiz</span>
+    </a>
+    <a href="{{ path('admin_roles') }}" class="tile">
+        <span class="tile-icon" aria-hidden="true">🔐</span><strong>Rôles & permissions</strong><span class="muted">4 profils</span>
+    </a>
+</div>
+
+<h2 class="section-title">Pilotage</h2>
+<div class="tiles">
+    <a href="{{ path('pilot_dashboard') }}" class="tile"><span class="tile-icon" aria-hidden="true">🧭</span><strong>Statistiques</strong><span class="muted">Cockpit et filtres</span></a>
+    <a href="{{ path('pilot_reporting') }}" class="tile"><span class="tile-icon" aria-hidden="true">📤</span><strong>Exports</strong><span class="muted">CSV / Excel</span></a>
+    <a href="{{ path('admin_quality') }}" class="tile"><span class="tile-icon" aria-hidden="true">🛡️</span><strong>Contrôle qualité</strong><span class="muted">Remontées du jeu</span></a>
+</div>
+{% endblock %}

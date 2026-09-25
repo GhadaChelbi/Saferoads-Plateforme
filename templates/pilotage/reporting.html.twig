@@ -1,0 +1,52 @@
+{% extends 'layouts/portal.html.twig' %}
+{% import '_macros.html.twig' as ui %}
+
+{% block page_title %}Reporting & exports{% endblock %}
+{% block page_subtitle %}Exportez les données traitées en tenant compte des filtres appliqués (ex. : septembre–décembre, Île-de-France, 3e).{% endblock %}
+{% block page_actions %}
+    {% set q = app.request.query.all %}
+    <a href="{{ path('pilot_export', q|merge({ format: 'csv' })) }}" class="btn btn-outline">⬇ Export CSV</a>
+    <a href="{{ path('pilot_export', q|merge({ format: 'xlsx' })) }}" class="btn btn-primary">⬇ Export Excel</a>
+{% endblock %}
+
+{% block content %}
+{% include 'pilotage/_filters.html.twig' with { route: 'pilot_reporting', showTheme: false } %}
+
+<section class="kpis kpis-5">
+    {{ ui.kpi('Sessions exportées', stats.sessions, '', null, '🎮') }}
+    {{ ui.kpi('Établissements', stats.establishments, '', null, '🏫') }}
+    {{ ui.kpi('Joueurs', stats.participants, '', null, '👥') }}
+    {{ ui.kpi('Complétion', stats.done ? stats.completion : null, '%', null, '✅') }}
+    {{ ui.kpi('Réussite', stats.done ? stats.success : null, '%', null, '🎯') }}
+</section>
+
+<section class="panel">
+    <div class="panel-head">
+        <h2>Aperçu de l'export</h2>
+        <span class="muted">Une ligne par session · agrégats uniquement</span>
+    </div>
+    <div class="table-wrap">
+        <table class="data">
+            <thead><tr><th>Code</th><th>Date</th><th>Établissement</th><th>Niveau</th><th>Campagne</th><th class="num">Participants</th><th class="num">Terminés</th><th class="num">Complétion</th><th class="num">Réussite</th><th>Statut</th></tr></thead>
+            <tbody>
+                {% for s in sessions %}
+                    <tr>
+                        <td class="mono">{{ s.code }}</td>
+                        <td>{{ s.date|date('d/m/Y') }}</td>
+                        <td>{{ establishmentsList[s.establishment].name }}</td>
+                        <td>{{ s.level }}</td>
+                        <td>{{ campaigns[s.campaign].name }}</td>
+                        <td class="num">{{ s.participants }}</td>
+                        <td class="num">{{ s.completed }}</td>
+                        <td class="num">{{ s.completion is null ? '—' : s.completion ~ ' %' }}</td>
+                        <td class="num">{{ s.success is null ? '—' : s.success ~ ' %' }}</td>
+                        <td>{{ ui.status(s) }}</td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="10" class="empty">Aucune session pour ces filtres.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

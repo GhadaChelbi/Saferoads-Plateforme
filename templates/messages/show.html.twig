@@ -1,0 +1,18 @@
+{% extends 'layouts/portal.html.twig' %}
+{% import '_macros.html.twig' as ui %}
+
+{% block breadcrumb %}<a href="{{ path('messages_index') }}" class="crumb">← Messages</a>{% endblock %}
+{% block page_title %}{{ message.title }}{% endblock %}
+{% block page_subtitle %}{{ ui.msg_icon(message.kind) }} {{ message.source }} · {{ message.date|date('d/m/Y') }} · {{ message.audience }}{% endblock %}
+
+{% block content %}
+<article class="panel prose">
+    {% for p in message.body|split("\n\n") %}<p>{{ p }}</p>{% endfor %}
+
+    {% if message.link %}
+        <a href="{{ path(message.link.route, { slug: message.link.slug }) }}" class="btn btn-primary">
+            {{ message.kind == 'module' ? '🎓 Ouvrir le module' : '📚 Voir la ressource' }} →
+        </a>
+    {% endif %}
+</article>
+{% endblock %}

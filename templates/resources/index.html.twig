@@ -1,0 +1,56 @@
+{% extends 'layouts/portal.html.twig' %}
+{% import '_macros.html.twig' as ui %}
+
+{% block page_title %}Centre de ressources{% endblock %}
+{% block page_subtitle %}Fiches, vidéos, supports de présentation et de débrief, classés par usage.{% endblock %}
+
+{% block content %}
+{# ---- Filtres enseignants (§10) ---- #}
+<form method="get" class="filters panel" data-controller="autosubmit">
+    <label>Niveau
+        <select name="niveau" data-action="autosubmit#submit">
+            <option value="">Tous</option>
+            {% for l in levels %}<option value="{{ l }}" {{ filters.level == l ? 'selected' }}>{{ l }}</option>{% endfor %}
+        </select>
+    </label>
+    <label>Thématique
+        <select name="thematique" data-action="autosubmit#submit">
+            <option value="">Toutes</option>
+            {% for k, t in themes %}<option value="{{ k }}" {{ filters.theme == k ? 'selected' }}>{{ t }}</option>{% endfor %}
+        </select>
+    </label>
+    <label>Type
+        <select name="type" data-action="autosubmit#submit">
+            <option value="">Tous</option>
+            {% for k, t in types %}<option value="{{ k }}" {{ filters.type == k ? 'selected' }}>{{ t }}</option>{% endfor %}
+        </select>
+    </label>
+    <label>Campagne
+        <select name="campagne" data-action="autosubmit#submit">
+            <option value="">Toutes</option>
+            {% for c in campaigns %}<option value="{{ c.slug }}" {{ filters.campaign == c.slug ? 'selected' }}>{{ c.name }}</option>{% endfor %}
+        </select>
+    </label>
+    <div class="filters-end">
+        <span class="muted">{{ total }} ressource(s)</span>
+        {% if filters|filter(v => v)|length %}<a href="{{ path('resources_index') }}" class="link">Réinitialiser</a>{% endif %}
+        <noscript><button class="btn btn-primary btn-sm">Filtrer</button></noscript>
+    </div>
+</form>
+
+{% for key, group in usageGroups %}
+    <section class="res-group" id="{{ key }}">
+        <div class="res-group-head">
+            <h2>{{ group.label }}</h2>
+            <p class="muted">{{ group.hint }}</p>
+        </div>
+        {% if group.items %}
+            <div class="res-grid">
+                {% for r in group.items %}{{ ui.resource_card(r, types) }}{% endfor %}
+            </div>
+        {% else %}
+            <p class="empty">Aucune ressource pour ces filtres.</p>
+        {% endif %}
+    </section>
+{% endfor %}
+{% endblock %}

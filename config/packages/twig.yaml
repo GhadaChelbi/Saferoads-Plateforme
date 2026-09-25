@@ -1,0 +1,10 @@
+twig:
+    file_name_pattern: '*.twig'
+    form_themes: []
+    globals:
+        # Données de démonstration accessibles dans tous les templates (profil, compteur de messages…)
+        demo: '@App\Data\DemoData'
+
+when@test:
+    twig:
+        strict_variables: true

@@ -1,0 +1,56 @@
+{# Filtres de pilotage (§14) : période, campagne, région, département, établissement, niveau, thématique #}
+{% set showTheme = showTheme ?? true %}
+<form method="get" action="{{ path(route) }}" class="filters panel" data-controller="autosubmit">
+    <label>Du
+        <input type="date" name="du" value="{{ filters.from }}" data-action="autosubmit#submit">
+    </label>
+    <label>Au
+        <input type="date" name="au" value="{{ filters.to }}" data-action="autosubmit#submit">
+    </label>
+    <label>Campagne
+        <select name="campagne" data-action="autosubmit#submit">
+            <option value="">Toutes</option>
+            {% for c in campaigns %}<option value="{{ c.slug }}" {{ filters.campaign == c.slug ? 'selected' }}>{{ c.name }}</option>{% endfor %}
+        </select>
+    </label>
+    <label>Région
+        <select name="region" data-action="autosubmit#submit">
+            <option value="">France entière</option>
+            {% for k, r in regions %}<option value="{{ k }}" {{ filters.region == k ? 'selected' }}>{{ r.name }}</option>{% endfor %}
+        </select>
+    </label>
+    <label>Département
+        <select name="departement" data-action="autosubmit#submit" {{ filters.region ? '' : 'disabled' }}>
+            <option value="">Tous</option>
+            {% if filters.region %}
+                {% for code, name in regions[filters.region].departments %}<option value="{{ code }}" {{ filters.dept == code ? 'selected' }}>{{ code }} — {{ name }}</option>{% endfor %}
+            {% endif %}
+        </select>
+    </label>
+    <label>Établissement
+        <select name="etablissement" data-action="autosubmit#submit">
+            <option value="">Tous</option>
+            {% for e in establishments|filter(e => (not filters.region or e.region == filters.region) and (not filters.dept or e.dept == filters.dept)) %}
+                <option value="{{ e.id }}" {{ filters.establishment == e.id ? 'selected' }}>{{ e.name }}</option>
+            {% endfor %}
+        </select>
+    </label>
+    <label>Niveau
+        <select name="niveau" data-action="autosubmit#submit">
+            <option value="">Tous</option>
+            {% for l in levels %}<option value="{{ l }}" {{ filters.level == l ? 'selected' }}>{{ l }}</option>{% endfor %}
+        </select>
+    </label>
+    {% if showTheme %}
+        <label>Thématique
+            <select name="thematique" data-action="autosubmit#submit">
+                <option value="">Toutes</option>
+                {% for k, t in themes %}<option value="{{ k }}" {{ filters.theme == k ? 'selected' }}>{{ t }}</option>{% endfor %}
+            </select>
+        </label>
+    {% endif %}
+    <div class="filters-end">
+        {% if filters|filter(v => v)|length %}<a href="{{ path(route) }}" class="link">Réinitialiser</a>{% endif %}
+        <noscript><button class="btn btn-primary btn-sm">Filtrer</button></noscript>
+    </div>
+</form>

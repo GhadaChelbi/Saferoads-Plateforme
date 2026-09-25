@@ -1,0 +1,27 @@
+{% extends 'layouts/portal.html.twig' %}
+{% import '_macros.html.twig' as ui %}
+
+{% block page_title %}Campagnes{% endblock %}
+{% block page_subtitle %}Territoire, période, établissements participants, volume de joueurs et résultats par campagne.{% endblock %}
+
+{% block content %}
+<div class="cards-2">
+    {% for c in rows %}
+        <a href="{{ path('pilot_campaign', { slug: c.slug }) }}" class="panel campaign-card" style="--i: {{ loop.index0 }}">
+            <div class="panel-head">
+                <span class="pill {{ c.status == 'En cours' ? 'pill-en_cours' : 'pill-terminee' }}">{{ c.status == 'En cours' ? '●' : '✓' }} {{ c.status }}</span>
+                <span class="muted">{{ c.territory }}</span>
+            </div>
+            <h2>{{ c.name }}</h2>
+            <p class="muted">{{ c.description }}</p>
+            <p class="small">📅 {{ c.start|date('d/m/Y') }} → {{ c.end|date('d/m/Y') }}</p>
+            <div class="mini-kpis">
+                <span><small>Établissements</small><strong>{{ c.stats.establishments }}</strong></span>
+                <span><small>Sessions</small><strong>{{ c.stats.sessions }}</strong></span>
+                <span><small>Joueurs</small><strong>{{ c.stats.participants }}</strong></span>
+                <span><small>Complétion</small><strong>{{ c.stats.done ? c.stats.completion ~ ' %' : '—' }}</strong></span>
+            </div>
+        </a>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends 'layouts/portal.html.twig' %}
+{% import '_macros.html.twig' as ui %}
+
+{% block page_title %}Mes résultats{% endblock %}
+{% block page_subtitle %}Uniquement les résultats de vos classes : complétion, réussite par thématique et points de débrief.{% endblock %}
+
+{% block content %}
+<section class="kpis">
+    {{ ui.kpi('Sessions terminées', stats.done, '', null, '🎮') }}
+    {{ ui.kpi('Participants', stats.participants, '', null, '👥') }}
+    {{ ui.kpi('Complétion', stats.completion, '%', null, '✅') }}
+    {{ ui.kpi('Réussite moyenne', stats.success, '%', null, '🎯') }}
+</section>
+
+<section class="panel">
+    <div class="panel-head"><h2>Toutes mes classes</h2></div>
+    <div class="split">
+        {{ ui.themes(stats.themes, stats.weakest.key ?? null) }}
+        <div class="insights">
+            {% if debrief %}
+                <div class="insight insight-warn">
+                    <span class="insight-icon" aria-hidden="true">⚠️</span>
+                    <span><small>À retravailler en priorité</small><strong>{{ stats.weakest.label }} <span class="nw">— {{ stats.weakest.rate }} %</span></strong></span>
+                </div>
+                <a href="{{ path('resources_show', { slug: debrief.slug }) }}" class="insight insight-action">
+                    <span class="insight-icon" aria-hidden="true">🗣️</span>
+                    <span><small>Support de débrief</small><strong>{{ debrief.title }}</strong></span>
+                    <span aria-hidden="true">→</span>
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<h2 class="section-title">Par classe</h2>
+<div class="cards-2">
+    {% for class, item in byClass %}
+        <section class="panel">
+            <div class="panel-head">
+                <h3>{{ class }}</h3>
+                <span class="muted">{{ item.stats.done }} session(s) · {{ item.stats.participants }} participants</span>
+            </div>
+            <div class="mini-kpis">
+                <span><small>Complétion</small><strong>{{ item.stats.completion }} %</strong></span>
+                <span><small>Réussite</small><strong>{{ item.stats.success }} %</strong></span>
+                <span><small>Point d'attention</small><strong>{{ item.stats.weakest.label }}</strong></span>
+            </div>
+            {{ ui.themes(item.stats.themes, item.stats.weakest.key) }}
+            <div class="chips">
+                {% for s in item.sessions %}
+                    <a href="{{ path('teacher_session', { code: s.code }) }}" class="chip">{{ s.code }} · {{ s.date|date('d/m') }}</a>
+                {% endfor %}
+            </div>
+        </section>
+    {% endfor %}
+</div>
+{% endblock %}

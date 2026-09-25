@@ -1,0 +1,79 @@
+{% extends 'layouts/portal.html.twig' %}
+{% import '_macros.html.twig' as ui %}
+
+{% block breadcrumb %}<a href="{{ path('teacher_sessions') }}" class="crumb">← Mes sessions</a>{% endblock %}
+{% block page_title %}Session {{ session.code }} — {{ session.class }}{% endblock %}
+{% block page_subtitle %}{{ establishment.name }} · {{ session.level }} · {{ session.date|date('d/m/Y à H:i') }} · {{ campaign.name }}{% endblock %}
+{% block page_actions %}{{ ui.status(session) }}{% endblock %}
+
+{% block content %}
+<div class="dash-grid">
+    {# ---- QR Code et code session ---- #}
+    <section class="panel qr-panel">
+        <h2>Rejoindre la session</h2>
+        <p class="muted">Projetez ce QR Code : les élèves le scannent dans Saferoads, ou saisissent le code.</p>
+        <div class="qr" data-controller="fullscreen">
+            <img src="{{ qr }}" alt="QR Code de la session {{ session.code }}" width="200" height="200">
+            <strong class="qr-code mono">{{ session.code }}</strong>
+            <button type="button" class="btn btn-outline btn-sm" data-action="fullscreen#toggle">⛶ Plein écran</button>
+        </div>
+        <dl class="meta">
+            <div><dt>Parcours</dt><dd>{{ session.path }}</dd></div>
+            <div><dt>Niveau</dt><dd>{{ session.level }}</dd></div>
+            <div><dt>Campagne</dt><dd>{{ campaign.name }}</dd></div>
+        </dl>
+    </section>
+
+    {% if session.status == 'terminee' %}
+        {# ---- Résultats de la session (§8) ---- #}
+        <section class="span-2 kpis kpis-3">
+            {{ ui.kpi('Participants', session.participants, '', null, '👥') }}
+            {{ ui.kpi('Parcours terminés', session.completed, '', null, '🏁') }}
+            {{ ui.kpi('Taux de complétion', session.completion, '%', null, '✅') }}
+            {{ ui.kpi('Réussite moyenne', session.success, '%', null, '🎯') }}
+            {{ ui.kpi('Temps moyen', session.avgMinutes, 'min', 'de jeu', '⏱') }}
+        </section>
+
+        <section class="panel span-2">
+            <div class="panel-head"><h2>Réussite par thématique</h2></div>
+            <div class="split">
+                {{ ui.themes(stats.themes, stats.weakest.key) }}
+                <div class="insights">
+                    <div class="insight insight-good">
+                        <span class="insight-icon" aria-hidden="true">💪</span>
+                        <span><small>Thématique forte</small><strong>{{ stats.strongest.label }} <span class="nw">— {{ stats.strongest.rate }} %</span></strong></span>
+                    </div>
+                    <div class="insight insight-warn">
+                        <span class="insight-icon" aria-hidden="true">⚠️</span>
+                        <span><small>Point d'attention</small><strong>{{ stats.weakest.label }} <span class="nw">— {{ stats.weakest.rate }} %</span></strong></span>
+                    </div>
+                    {% if debrief %}
+                        <a href="{{ path('resources_show', { slug: debrief.slug }) }}" class="insight insight-action">
+                            <span class="insight-icon" aria-hidden="true">🗣️</span>
+                            <span><small>Action : débriefer maintenant</small><strong>{{ debrief.title }}</strong></span>
+                            <span aria-hidden="true">→</span>
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </section>
+    {% else %}
+        <section class="panel span-2">
+            <h2>{{ session.status == 'en_cours' ? 'Session en cours' : 'Préparer la séance' }}</h2>
+            <p class="muted">
+                {% if session.status == 'en_cours' %}
+                    Les résultats s'afficheront à la fin de la séance, dès la synchronisation des données du jeu
+                    (y compris après un passage en mode déconnecté).
+                {% else %}
+                    Les résultats apparaîtront ici après la séance. En attendant, voici les ressources pour la préparer.
+                {% endif %}
+            </p>
+            <div class="res-grid">
+                {% for r in preparation %}
+                    {{ ui.resource_card(r, { fiche: 'Fiche', video: 'Vidéo', presentation: 'Présentation', quiz: 'Quiz', document: 'Document' }) }}
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
+</div>
+{% endblock %}

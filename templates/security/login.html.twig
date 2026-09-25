@@ -1,0 +1,64 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Connexion — Saferoads{% endblock %}
+
+{% block body %}
+<div class="login" data-controller="reveal">
+    <section class="login-side">
+        <div class="signs" aria-hidden="true">
+            {% for sign in ['⚠️', '🛑', '🚸', '⛔', '🅿️', '🚲'] %}<span style="--i: {{ loop.index0 }}">{{ sign }}</span>{% endfor %}
+        </div>
+        <a href="{{ path('app_home') }}" class="brand login-brand">
+            <span class="brand-mark" aria-hidden="true"><span class="light"><i></i><i></i><i></i></span></span>
+            <span>Saferoads <small>Plateforme professionnelle</small></span>
+        </a>
+        <div class="login-pitch">
+            <h1>Le portail des professionnels de Saferoads</h1>
+            <ul>
+                <li>🎮 Utiliser Saferoads en classe</li>
+                <li>🎓 Se former et s'outiller</li>
+                <li>🧭 Mesurer et piloter</li>
+                <li>📨 Recevoir les communications DSR</li>
+            </ul>
+        </div>
+        <p class="login-foot">Aucune donnée nominative d'élève · Hébergement en France</p>
+    </section>
+
+    <section class="login-main">
+        <form method="post" class="login-card" data-controller="login-form" novalidate>
+            <h2>Connexion</h2>
+            <p class="muted">Espace réservé aux comptes professionnels.</p>
+
+            {% if error %}
+                <div class="flash flash-error" role="alert">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+            {% endif %}
+
+            <div class="field" data-login-form-target="field" data-rule="email">
+                <label for="email">Adresse e-mail professionnelle</label>
+                <input type="email" id="email" name="email" value="{{ last_email }}" autocomplete="email" required autofocus
+                       data-action="input->login-form#validate blur->login-form#touch">
+                <p class="field-error" data-login-form-target="error"></p>
+            </div>
+            <div class="field" data-login-form-target="field" data-rule="password">
+                <label for="password">Mot de passe</label>
+                <input type="password" id="password" name="password" autocomplete="current-password" required
+                       data-action="input->login-form#validate blur->login-form#touch">
+                <p class="field-error" data-login-form-target="error"></p>
+            </div>
+            <input type="hidden" name="_csrf_token" data-controller="csrf-protection" value="{{ csrf_token('authenticate') }}">
+
+            <button class="btn btn-primary btn-block" data-login-form-target="submit">Se connecter</button>
+
+            <details class="demo-accounts">
+                <summary>Comptes de démonstration</summary>
+                <p class="muted small">Mot de passe : <code>demo1234</code></p>
+                <div class="chips">
+                    {% for email, label in { 'enseignant@saferoads.fr': 'Enseignant', 'chef@saferoads.fr': "Chef d'établissement", 'dsr@saferoads.fr': 'DSR', 'admin@saferoads.fr': 'Admin' } %}
+                        <button type="button" class="chip" data-action="login-form#fill" data-login-form-email-param="{{ email }}">{{ label }}</button>
+                    {% endfor %}
+                </div>
+            </details>
+        </form>
+    </section>
+</div>
+{% endblock %}

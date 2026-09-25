@@ -1,0 +1,101 @@
+{% extends 'layouts/portal.html.twig' %}
+{% import '_macros.html.twig' as ui %}
+
+{% block page_title %}Cockpit de pilotage{% endblock %}
+{% block page_subtitle %}Statistiques globales Saferoads / DSR — agrégats uniquement, sans donnée nominative.{% endblock %}
+{% block page_actions %}
+    {% if is_granted('ROLE_REPORTING') %}
+        <a href="{{ path('pilot_reporting', app.request.query.all) }}" class="btn btn-outline">📤 Exporter cette vue</a>
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+{% include 'pilotage/_filters.html.twig' with { route: 'pilot_dashboard' } %}
+
+{# ---- Fil d'Ariane territorial ---- #}
+<nav class="territory" aria-label="Niveau territorial">
+    {% for c in breadcrumb %}
+        {% if not loop.last %}
+            <a href="{{ path('pilot_dashboard', c.params|merge({ campagne: filters.campaign, niveau: filters.level, thematique: filters.theme, du: filters.from, au: filters.to })|filter(v => v)) }}">{{ c.label }}</a><span aria-hidden="true">›</span>
+        {% else %}
+            <strong>{{ c.label }}</strong>
+        {% endif %}
+    {% endfor %}
+</nav>
+
+<section class="kpis kpis-6">
+    {{ ui.kpi('Joueurs', stats.participants, '', 'élèves sur sessions terminées', '👥') }}
+    {{ ui.kpi('Sessions', stats.sessions, '', stats.done ~ ' terminées', '🎮') }}
+    {{ ui.kpi('Établissements', stats.establishments, '', null, '🏫') }}
+    {{ ui.kpi('Enseignants', stats.teachers, '', null, '👩‍🏫') }}
+    {{ ui.kpi('Complétion', stats.completion, '%', null, '✅') }}
+    {% if themeFocus %}
+        {{ ui.kpi('Réussite ' ~ themeFocus.label, themeFocus.rate, '%', 'thématique filtrée', '🎯') }}
+    {% else %}
+        {{ ui.kpi('Réussite', stats.success, '%', 'temps moyen ' ~ stats.avgMinutes ~ ' min', '🎯') }}
+    {% endif %}
+</section>
+
+<div class="dash-grid">
+    <section class="panel span-2">
+        <div class="panel-head">
+            <h2>Évolution du nombre de joueurs</h2>
+            <span class="muted">National, 2026 · non filtré</span>
+        </div>
+        <div class="linechart" data-controller="linechart" data-linechart-unit-value="joueurs"
+             data-linechart-points-value="{{ monthly|map(m => { label: m.label, value: m.players })|json_encode|e('html_attr') }}"></div>
+        <details class="table-view">
+            <summary>Voir les données</summary>
+            <table class="data compact"><tbody>{% for m in monthly %}<tr><td>{{ m.label }}</td><td class="num">{{ m.players|number_format(0, ',', ' ') }}</td></tr>{% endfor %}</tbody></table>
+        </details>
+    </section>
+
+    <section class="panel">
+        <div class="panel-head"><h2>Réussite par thématique</h2></div>
+        {{ ui.themes(stats.themes, stats.weakest.key ?? null) }}
+    </section>
+
+    <section class="panel span-2">
+        <div class="panel-head">
+            <h2>Lecture territoriale — {{ drill.level }}</h2>
+            <span class="muted">Ordre alphabétique · pas de classement</span>
+        </div>
+        <div class="table-wrap">
+            <table class="data">
+                <thead><tr><th>{{ drill.level|slice(0, -1) }}</th><th class="num">Sessions</th><th class="num">Joueurs</th><th>Complétion</th><th>Réussite</th><th></th></tr></thead>
+                <tbody>
+                    {% for row in drill.rows %}
+                        <tr style="--i: {{ loop.index0 }}">
+                            <td><strong>{{ row.name }}</strong></td>
+                            <td class="num">{{ row.stats.sessions }}</td>
+                            <td class="num">{{ row.stats.participants|number_format(0, ',', ' ') }}</td>
+                            <td>{{ ui.bar(row.stats.done ? row.stats.completion : null) }}</td>
+                            <td>{{ ui.bar(row.stats.done ? row.stats.success : null) }}</td>
+                            <td>
+                                {% if row.params %}
+                                    <a class="link" href="{{ path('pilot_dashboard', app.request.query.all|merge(row.params)) }}">Détailler →</a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="6" class="empty">Aucune donnée pour ces filtres.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="panel">
+        <div class="panel-head"><h2>Erreurs les plus fréquentes</h2></div>
+        <ol class="errors">
+            {% for e in errors %}
+                <li style="--i: {{ loop.index0 }}">
+                    <span>{{ e.label }}<small class="muted d-block">{{ themes[e.theme] }}</small></span>
+                    <strong>{{ e.share }} %</strong>
+                </li>
+            {% endfor %}
+        </ol>
+        <p class="muted small">Part des joueurs ayant commis l'erreur au moins une fois.</p>
+    </section>
+</div>
+{% endblock %}

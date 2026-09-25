@@ -1,0 +1,67 @@
+{% extends 'layouts/portal.html.twig' %}
+
+{% block breadcrumb %}<a href="{{ path('mooc_index') }}" class="crumb">← Formation MOOC</a>{% endblock %}
+{% block page_title %}Module {{ module.number }} — {{ module.title }}{% endblock %}
+{% block page_subtitle %}{{ module.summary }}{% endblock %}
+
+{% block content %}
+{% set icons = { video: '🎬', texte: '📖', pdf: '📎' } %}
+<div class="dash-grid">
+    {# ---- Leçons ---- #}
+    <aside class="panel">
+        <h2>Leçons</h2>
+        <div class="progress"><span style="--w: {{ module.progress }}%"></span></div>
+        <ol class="lessons">
+            {% for l in module.lessons %}
+                <li class="{{ l.done ? 'is-done' }} {{ loop.first ? 'is-current' }}">
+                    <span class="lesson-check" aria-hidden="true">{{ l.done ? '✓' : loop.index }}</span>
+                    <span>{{ icons[l.kind] }} {{ l.title }} <small class="muted">· {{ l.minutes }} min</small></span>
+                </li>
+            {% endfor %}
+            <li><span class="lesson-check" aria-hidden="true">?</span><span>❓ Quiz de validation</span></li>
+        </ol>
+    </aside>
+
+    {# ---- Contenu de la leçon ---- #}
+    <section class="panel span-2">
+        <span class="kicker-sm">Leçon 1</span>
+        <h2>{{ module.lessons[0].title }}</h2>
+        {% if module.lessons[0].kind == 'video' %}
+            <div class="video-placeholder" role="img" aria-label="Vidéo de la leçon">
+                <span class="play" aria-hidden="true">▶</span>
+                <small>Vidéo · {{ module.lessons[0].minutes }} min</small>
+            </div>
+        {% endif %}
+        <p>
+            Cette leçon fait partie du module « {{ module.title }} ». Les contenus (vidéos, textes, PDF) sont gérés
+            par Saferoads depuis le back-office du MOOC, sans intervention du développeur.
+        </p>
+
+        {# ---- Quiz de validation (§11) ---- #}
+        <div class="quiz" data-controller="quiz">
+            <h3>Quiz de validation</h3>
+            {% for q in module.quiz %}
+                {% set qi = loop.index0 %}
+                <fieldset class="quiz-q" data-quiz-target="question" data-correct="{{ q.correct }}">
+                    <legend>{{ loop.index }}. {{ q.q }}</legend>
+                    {% for a in q.answers %}
+                        <label class="quiz-a">
+                            <input type="radio" name="q{{ qi }}" value="{{ loop.index0 }}" data-action="quiz#answer">
+                            <span>{{ a }}</span>
+                        </label>
+                    {% endfor %}
+                </fieldset>
+            {% endfor %}
+            <div class="quiz-foot">
+                <button type="button" class="btn btn-primary" data-action="quiz#check" data-quiz-target="submit" disabled>Valider mes réponses</button>
+                <p class="quiz-result" data-quiz-target="result" role="status"></p>
+            </div>
+        </div>
+
+        <div class="pager">
+            {% if previous %}<a href="{{ path('mooc_module', { slug: previous.slug }) }}" class="btn btn-outline">← {{ previous.title }}</a>{% else %}<span></span>{% endif %}
+            {% if next %}<a href="{{ path('mooc_module', { slug: next.slug }) }}" class="btn btn-outline">{{ next.title }} →</a>{% endif %}
+        </div>
+    </section>
+</div>
+{% endblock %}

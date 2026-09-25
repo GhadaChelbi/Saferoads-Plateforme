@@ -1,0 +1,55 @@
+{% extends 'layouts/portal.html.twig' %}
+{% import '_macros.html.twig' as ui %}
+
+{% block breadcrumb %}<a href="{{ path('pilot_campaigns') }}" class="crumb">← Campagnes</a>{% endblock %}
+{% block page_title %}{{ campaign.name }}{% endblock %}
+{% block page_subtitle %}{{ campaign.territory }} · du {{ campaign.start|date('d/m/Y') }} au {{ campaign.end|date('d/m/Y') }} · {{ campaign.status }}{% endblock %}
+{% block page_actions %}
+    {% if is_granted('ROLE_REPORTING') %}
+        <a href="{{ path('pilot_reporting', { campagne: campaign.slug }) }}" class="btn btn-outline">📤 Reporting de la campagne</a>
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+<section class="kpis kpis-5">
+    {{ ui.kpi('Établissements', stats.establishments, '', null, '🏫') }}
+    {{ ui.kpi('Sessions', stats.sessions, '', stats.planned ~ ' planifiée(s)', '🎮') }}
+    {{ ui.kpi('Joueurs', stats.participants, '', null, '👥') }}
+    {{ ui.kpi('Complétion', stats.done ? stats.completion : null, '%', null, '✅') }}
+    {{ ui.kpi('Réussite', stats.done ? stats.success : null, '%', null, '🎯') }}
+</section>
+
+<div class="dash-grid">
+    <section class="panel span-2">
+        <div class="panel-head"><h2>Répartition territoriale</h2></div>
+        <div class="table-wrap">
+            <table class="data">
+                <thead><tr><th>Région</th><th class="num">Établissements</th><th class="num">Sessions</th><th class="num">Joueurs</th><th>Complétion</th><th>Réussite</th></tr></thead>
+                <tbody>
+                    {% for r in regions %}
+                        <tr>
+                            <td><strong>{{ r.name }}</strong></td>
+                            <td class="num">{{ r.stats.establishments }}</td>
+                            <td class="num">{{ r.stats.sessions }}</td>
+                            <td class="num">{{ r.stats.participants }}</td>
+                            <td>{{ ui.bar(r.stats.done ? r.stats.completion : null) }}</td>
+                            <td>{{ ui.bar(r.stats.done ? r.stats.success : null) }}</td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="6" class="empty">Aucune session pour cette campagne.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="panel">
+        <div class="panel-head"><h2>Thématiques</h2></div>
+        {% if stats.done %}
+            {{ ui.themes(stats.themes, stats.weakest.key) }}
+        {% else %}
+            <p class="empty">Résultats disponibles après les premières sessions.</p>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

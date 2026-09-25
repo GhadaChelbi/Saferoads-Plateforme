@@ -1,0 +1,53 @@
+{% extends 'layouts/portal.html.twig' %}
+
+{% block breadcrumb %}<a href="{{ path('admin_dashboard') }}" class="crumb">← Back-office</a>{% endblock %}
+{% block page_title %}🔐 Rôles & permissions{% endblock %}
+{% block page_subtitle %}Chaque profil ne voit que le périmètre strictement nécessaire à sa fonction (§3 et §21).{% endblock %}
+
+{% block content %}
+<div class="flash flash-info">ℹ️ Les droits DSR ne sont pas assimilés aux droits Admin Saferoads : la DSR n'accède pas au back-office.</div>
+
+<section class="panel">
+    <div class="table-wrap">
+        <table class="data matrix">
+            <thead>
+                <tr><th>Permission</th>{% for r in roles %}<th class="center">{{ r }}</th>{% endfor %}</tr>
+            </thead>
+            <tbody>
+                {% for label, flags in permissions %}
+                    <tr style="--i: {{ loop.index0 }}">
+                        <td><strong>{{ label }}</strong></td>
+                        {% for allowed in flags %}
+                            <td class="center">
+                                {% if allowed %}<span class="yes" title="Autorisé">✓<span class="sr-only"> autorisé</span></span>
+                                {% else %}<span class="no" title="Interdit">✕<span class="sr-only"> interdit</span></span>{% endif %}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<div class="cards-2 mt">
+    <section class="panel">
+        <h2>Comptes de démonstration</h2>
+        <ul class="list">
+            <li class="list-row"><span><strong>enseignant@saferoads.fr</strong><small class="muted d-block">ROLE_ENSEIGNANT</small></span></li>
+            <li class="list-row"><span><strong>chef@saferoads.fr</strong><small class="muted d-block">ROLE_CHEF_ETABLISSEMENT</small></span></li>
+            <li class="list-row"><span><strong>dsr@saferoads.fr</strong><small class="muted d-block">ROLE_DSR → pilotage, reporting, communication</small></span></li>
+            <li class="list-row"><span><strong>admin@saferoads.fr</strong><small class="muted d-block">ROLE_ADMIN → pilotage, reporting, communication, back-office</small></span></li>
+        </ul>
+    </section>
+    <section class="panel">
+        <h2>RGPD</h2>
+        <ul class="bullets">
+            <li>Pas de base nominative d'élèves dans la plateforme professionnelle.</li>
+            <li>Comptes professionnels pour les enseignants et administrateurs.</li>
+            <li>Minimisation : uniquement les données nécessaires à la séance, à l'analyse et au reporting.</li>
+            <li>Durées de conservation à définir · hébergement en France.</li>
+        </ul>
+    </section>
+</div>
+{% endblock %}

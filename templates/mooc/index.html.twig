@@ -1,0 +1,42 @@
+{% extends 'layouts/portal.html.twig' %}
+
+{% block page_title %}Formation MOOC Saferoads{% endblock %}
+{% block page_subtitle %}Se former à l'utilisation du serious game, à l'animation de séance et au débrief.{% endblock %}
+
+{% block content %}
+<section class="panel panel-hero">
+    <div>
+        <span class="kicker-sm">Ma progression</span>
+        <h2>{{ done }} module(s) terminé(s) sur {{ modules|length }}</h2>
+        <div class="progress progress-lg"><span style="--w: {{ progress }}%"></span></div>
+        <p class="muted">{{ progress }} % de la formation — l'attestation de fin de formation sera disponible à 100 %.</p>
+        {% if resume %}
+            <a href="{{ path('mooc_module', { slug: resume.slug }) }}" class="btn btn-primary">▶ Reprendre : {{ resume.title }}</a>
+        {% endif %}
+    </div>
+    <div class="ring ring-lg" style="--p: {{ progress }}"><span><strong data-count="{{ progress }}">{{ progress }}</strong>%</span></div>
+</section>
+
+<h2 class="section-title">Catalogue des modules</h2>
+<ol class="modules">
+    {% for m in modules %}
+        <li class="module module-{{ m.state }}" style="--i: {{ loop.index0 }}">
+            <a href="{{ path('mooc_module', { slug: m.slug }) }}">
+                <span class="module-num">{{ m.state == 'done' ? '✓' : m.number }}</span>
+                <span class="module-body">
+                    <strong>{{ m.title }}</strong>
+                    <small class="muted">{{ m.summary }}</small>
+                    <span class="module-meta">
+                        {{ m.lessons|length }} leçons · quiz · ~{{ m.minutes }} min
+                    </span>
+                </span>
+                <span class="module-state">
+                    {% if m.state == 'done' %}<span class="pill pill-terminee">✓ Terminé</span>
+                    {% elseif m.state == 'in_progress' %}<span class="pill pill-en_cours">● En cours · {{ m.progress }} %</span>
+                    {% else %}<span class="pill">À commencer</span>{% endif %}
+                </span>
+            </a>
+        </li>
+    {% endfor %}
+</ol>
+{% endblock %}

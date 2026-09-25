@@ -1,0 +1,79 @@
+{% extends 'layouts/portal.html.twig' %}
+{% import '_macros.html.twig' as ui %}
+
+{% block page_title %}{{ establishment.name }}{% endblock %}
+{% block page_subtitle %}{{ establishment.city }} · Suivi interne de l'utilisation de Saferoads — périmètre limité à votre établissement.{% endblock %}
+{% block page_actions %}<a href="{{ path('school_sessions') }}" class="btn btn-outline">Toutes les sessions →</a>{% endblock %}
+
+{% block content %}
+<section class="kpis">
+    {{ ui.kpi('Enseignants utilisateurs', teachers|filter(t => t.active)|length, '/' ~ teachers|length, 'inscrits sur la plateforme', '👩‍🏫') }}
+    {{ ui.kpi('Sessions réalisées', stats.done, '', stats.planned ~ ' planifiée(s)', '🎮') }}
+    {{ ui.kpi('Élèves participants', stats.participants, '', 'données agrégées', '👥') }}
+    {{ ui.kpi('Taux de complétion', stats.completion, '%', null, '✅') }}
+</section>
+
+<div class="dash-grid">
+    <section class="panel span-2">
+        <div class="panel-head"><h2>Enseignants utilisant Saferoads</h2></div>
+        <div class="table-wrap">
+            <table class="data">
+                <thead><tr><th>Enseignant</th><th>Discipline</th><th class="num">Sessions</th><th>Dernière séance</th><th>Formation MOOC</th><th>État</th></tr></thead>
+                <tbody>
+                    {% for t in teachers %}
+                        <tr>
+                            <td><strong>{{ t.name }}</strong></td>
+                            <td>{{ t.subject }}</td>
+                            <td class="num">{{ t.done }}{% if t.sessions > t.done %} <small class="muted">+{{ t.sessions - t.done }}</small>{% endif %}</td>
+                            <td>{{ t.last ? t.last|date('d/m/Y') : '—' }}</td>
+                            <td>{{ ui.bar(t.mooc) }}</td>
+                            <td>{% if t.active %}<span class="pill pill-terminee">✓ Actif</span>{% else %}<span class="pill">Pas encore de session</span>{% endif %}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="panel">
+        <div class="panel-head"><h2>Sessions par niveau</h2></div>
+        <ul class="themes">
+            {% set max = levels ? max(levels) : 1 %}
+            {% for level, count in levels %}
+                <li class="theme" style="--i: {{ loop.index0 }}">
+                    <span class="theme-label">{{ level }}</span>
+                    <span class="theme-track"><span class="theme-fill" style="--w: {{ (count / max * 100)|round }}%"></span></span>
+                    <span class="theme-value">{{ count }}</span>
+                </li>
+            {% endfor %}
+        </ul>
+    </section>
+
+    <section class="panel span-2">
+        <div class="panel-head"><h2>Résultats pédagogiques agrégés</h2></div>
+        <p class="muted">Moyenne des sessions terminées de l'établissement. Aucune comparaison avec d'autres établissements.</p>
+        {{ ui.themes(stats.themes, stats.weakest.key ?? null) }}
+    </section>
+
+    <section class="panel">
+        <div class="panel-head"><h2>Prochaines séances</h2></div>
+        <ul class="list">
+            {% for s in upcoming %}
+                <li class="list-row">
+                    <span><strong>{{ s.class }}</strong> · <span class="mono">{{ s.code }}</span><small class="muted d-block">{{ s.date|date('d/m/Y H:i') }}</small></span>
+                    {{ ui.status(s) }}
+                </li>
+            {% else %}
+                <li class="empty">Aucune séance à venir.</li>
+            {% endfor %}
+        </ul>
+
+        <div class="panel-head mt"><h2>Informations</h2><a href="{{ path('messages_index') }}" class="link">Messages →</a></div>
+        <ul class="list">
+            {% for id, m in news %}
+                <li><a href="{{ path('messages_show', { id: id }) }}" class="list-row {{ m.read ? '' : 'is-unread' }}"><span>{{ ui.msg_icon(m.kind) }} {{ m.title }}</span>{% if not m.read %}<span class="dot"></span>{% endif %}</a></li>
+            {% endfor %}
+        </ul>
+    </section>
+</div>
+{% endblock %}

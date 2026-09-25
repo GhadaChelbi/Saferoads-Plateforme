@@ -1,0 +1,83 @@
+{% extends 'layouts/portal.html.twig' %}
+
+{% block breadcrumb %}<a href="{{ path('com_index') }}" class="crumb">← Communications</a>{% endblock %}
+{% block page_title %}Nouvelle communication{% endblock %}
+{% block page_subtitle %}Publication institutionnelle à destination des enseignants — pas de communication avec les élèves.{% endblock %}
+
+{% block content %}
+<form method="post" enctype="multipart/form-data" class="form-grid" data-controller="audience" novalidate>
+    <input type="hidden" name="_token" value="{{ csrf_token('com_new') }}">
+
+    <section class="panel span-2">
+        <h2>Contenu</h2>
+        <div class="field {{ errors.title is defined ? 'is-invalid' }}">
+            <label for="com_title">Titre</label>
+            <input id="com_title" name="com[title]" value="{{ values.title }}" maxlength="140" placeholder="Objet de la communication" required>
+            {% if errors.title is defined %}<p class="field-error">{{ errors.title }}</p>{% endif %}
+        </div>
+        <div class="field {{ errors.body is defined ? 'is-invalid' }}">
+            <label for="com_body">Contenu</label>
+            <textarea id="com_body" name="com[body]" rows="8" placeholder="Texte éditorial…" required>{{ values.body }}</textarea>
+            {% if errors.body is defined %}<p class="field-error">{{ errors.body }}</p>{% endif %}
+        </div>
+        <div class="field-row">
+            <div class="field">
+                <label for="com_file">Pièce jointe</label>
+                <input id="com_file" type="file" name="com_file" accept=".pdf,.pptx,.docx,.png,.jpg">
+            </div>
+            <div class="field">
+                <label for="com_link">Lien interne</label>
+                <select id="com_link" name="com[link]">
+                    <option value="">Aucun</option>
+                    <optgroup label="Ressources">
+                        {% for r in resources %}<option value="res:{{ r.slug }}" {{ values.link == 'res:' ~ r.slug ? 'selected' }}>{{ r.title }}</option>{% endfor %}
+                    </optgroup>
+                    <optgroup label="Modules MOOC">
+                        {% for m in modules %}<option value="mooc:{{ m.slug }}" {{ values.link == 'mooc:' ~ m.slug ? 'selected' }}>Module {{ m.number }} — {{ m.title }}</option>{% endfor %}
+                    </optgroup>
+                </select>
+            </div>
+        </div>
+    </section>
+
+    <aside class="panel">
+        <h2>Diffusion</h2>
+        <fieldset class="field">
+            <legend>Destinataires</legend>
+            <select name="com[audience]" data-audience-target="type" data-action="audience#change" aria-label="Type de ciblage">
+                {% for k, label in audiences %}<option value="{{ k }}" {{ values.audience == k ? 'selected' }}>{{ label }}</option>{% endfor %}
+            </select>
+        </fieldset>
+
+        {# Une liste par type de ciblage ; seule celle du type choisi est active #}
+        <div class="field {{ errors.target is defined ? 'is-invalid' }}">
+            {% set targets = {
+                region: regions|map(r => r.name),
+                department: departments,
+                level: levels|reduce((carry, l) => carry|merge({ (l): l }), {}),
+                campaign: campaigns|map(c => c.name),
+                establishment: establishments|map(e => e.name),
+            } %}
+            {% for type, options in targets %}
+                <select name="com[target]" data-audience-target="segment" data-type="{{ type }}" aria-label="Segment ciblé" hidden disabled>
+                    <option value="">Choisir…</option>
+                    {% for k, label in options %}<option value="{{ k }}" {{ values.audience == type and values.target == k ~ '' ? 'selected' }}>{{ label }}</option>{% endfor %}
+                </select>
+            {% endfor %}
+            {% if errors.target is defined %}<p class="field-error">{{ errors.target }}</p>{% endif %}
+        </div>
+
+        <fieldset class="field">
+            <legend>Date de publication</legend>
+            <label class="radio"><input type="radio" name="com[when]" value="now" {{ values.when == 'now' ? 'checked' }} data-action="audience#change"> Immédiate</label>
+            <label class="radio"><input type="radio" name="com[when]" value="later" {{ values.when == 'later' ? 'checked' }} data-action="audience#change"> Planifiée</label>
+            <input type="datetime-local" name="com[publishAt]" value="{{ values.publishAt }}" data-audience-target="date" aria-label="Date et heure de publication">
+            {% if errors.publishAt is defined %}<p class="field-error">{{ errors.publishAt }}</p>{% endif %}
+        </fieldset>
+
+        <label class="check"><input type="checkbox" name="com[email]" value="1" {{ values.email ? 'checked' }}> Envoyer aussi un e-mail professionnel de notification</label>
+
+        <button class="btn btn-primary btn-block">Publier la communication</button>
+    </aside>
+</form>
+{% endblock %}

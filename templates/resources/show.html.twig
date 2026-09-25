@@ -1,0 +1,50 @@
+{% extends 'layouts/portal.html.twig' %}
+{% import '_macros.html.twig' as ui %}
+
+{% block breadcrumb %}<a href="{{ path('resources_index') }}" class="crumb">← Centre de ressources</a>{% endblock %}
+{% block page_title %}{{ resource.title }}{% endblock %}
+{% block page_subtitle %}{{ usages[resource.usage].label }} · {{ types[resource.type] }} · publiée le {{ resource.publishedAt|date('d/m/Y') }}{% endblock %}
+
+{% block content %}
+<div class="dash-grid">
+    <section class="panel span-2">
+        {% if resource.type == 'video' %}
+            <div class="video-placeholder" role="img" aria-label="Lecteur vidéo">
+                <span class="play" aria-hidden="true">▶</span>
+                <small>{{ resource.format }}</small>
+            </div>
+        {% else %}
+            <div class="doc-preview" aria-hidden="true">
+                <span class="doc-icon">{{ { fiche: '📄', presentation: '🖥️', quiz: '❓', document: '📘' }[resource.type] }}</span>
+                <span class="doc-lines"><i></i><i></i><i></i><i></i></span>
+            </div>
+        {% endif %}
+        <h2>Présentation</h2>
+        <p>{{ resource.summary }}</p>
+        <div class="hero-actions">
+            <a href="#" class="btn btn-primary">⬇ Télécharger ({{ resource.format }})</a>
+            {% if resource.usage == 'debriefer' %}<a href="#" class="btn btn-outline">🖥️ Projeter en classe</a>{% endif %}
+        </div>
+    </section>
+
+    <aside class="panel">
+        <h2>Informations</h2>
+        <dl class="meta meta-col">
+            <div><dt>Usage</dt><dd>{{ usages[resource.usage].label }}</dd></div>
+            <div><dt>Type</dt><dd>{{ types[resource.type] }}</dd></div>
+            <div><dt>Niveaux</dt><dd>{{ resource.levels ? resource.levels|join(', ') : 'Tous niveaux' }}</dd></div>
+            <div><dt>Thématique</dt><dd>{{ resource.theme ? themes[resource.theme] : '—' }}</dd></div>
+            <div><dt>Campagne</dt><dd>{{ resource.campaign ? campaigns[resource.campaign].name : '—' }}</dd></div>
+        </dl>
+    </aside>
+
+    {% if related %}
+        <section class="span-3">
+            <h2 class="section-title">Ressources liées</h2>
+            <div class="res-grid">
+                {% for r in related %}{{ ui.resource_card(r, types) }}{% endfor %}
+            </div>
+        </section>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends 'layouts/portal.html.twig' %}
+{% import '_macros.html.twig' as ui %}
+
+{% block breadcrumb %}<a href="{{ path('admin_dashboard') }}" class="crumb">← Back-office</a>{% endblock %}
+{% block page_title %}🛡️ Qualité des données{% endblock %}
+{% block page_subtitle %}Suivi du traitement des remontées du serious game (§26) et du mode déconnecté (§27).{% endblock %}
+
+{% block content %}
+<div class="flash flash-info">ℹ️ Le contrat de données doit être défini avec le Dev Game : ces indicateurs sont illustratifs.</div>
+
+<section class="kpis kpis-5">
+    {{ ui.kpi('Événements reçus (24 h)', 18452, '', null, '📥') }}
+    {{ ui.kpi('Source non authentifiée', 3, '', 'rejetés', '🔒') }}
+    {{ ui.kpi('Invalides', 27, '', 'schéma non conforme', '⚠️') }}
+    {{ ui.kpi('Doublons écartés', 412, '', 'après resynchronisation', '♻️') }}
+    {{ ui.kpi('En attente de synchro', 2, '', 'sessions hors ligne', '📶') }}
+</section>
+
+<section class="panel">
+    <div class="panel-head"><h2>Chaîne de traitement backend</h2></div>
+    <ol class="pipeline">
+        {% for step in [
+            ['Recevoir', 'Réception des événements du jeu', '18 452'],
+            ['Authentifier la source', 'Signature de l\'application Saferoads', '18 449'],
+            ['Valider', 'Conformité au contrat de données', '18 422'],
+            ['Contrôler', 'Cohérence (horodatage, code session)', '18 422'],
+            ['Dédoublonner', 'Reprise après mode déconnecté', '18 010'],
+            ['Stocker', 'Base hébergée en France', '18 010'],
+            ['Agréger', 'Indicateurs par session / territoire', '214 agrégats'],
+            ['Restituer', 'Dashboards enseignant, établissement, DSR', 'OK'],
+        ] %}
+            <li style="--i: {{ loop.index0 }}">
+                <span class="step-num">{{ loop.index }}</span>
+                <span><strong>{{ step[0] }}</strong><small class="muted d-block">{{ step[1] }}</small></span>
+                <span class="step-count">{{ step[2] }}</span>
+            </li>
+        {% endfor %}
+    </ol>
+</section>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends 'layouts/portal.html.twig' %}
+{% import '_macros.html.twig' as ui %}
+
+{% block page_title %}Établissements participants{% endblock %}
+{% block page_subtitle %}Sessions, participants, niveaux et résultats agrégés — outil d'analyse, pas de classement public.{% endblock %}
+
+{% block content %}
+{% include 'pilotage/_filters.html.twig' with { route: 'pilot_establishments', showTheme: false } %}
+
+<section class="panel">
+    <div class="panel-head">
+        <h2>{{ rows|length }} établissements</h2>
+        <span class="muted">Ordre alphabétique</span>
+    </div>
+    <div class="table-wrap">
+        <table class="data">
+            <thead><tr><th>Établissement</th><th>Commune</th><th>Dép.</th><th>Niveaux</th><th class="num">Sessions</th><th class="num">Participants</th><th>Complétion</th><th>Réussite</th><th></th></tr></thead>
+            <tbody>
+                {% for e in rows %}
+                    <tr style="--i: {{ loop.index0 }}">
+                        <td><strong>{{ e.name }}</strong><small class="muted d-block">{{ e.type }}</small></td>
+                        <td>{{ e.city }}</td>
+                        <td>{{ e.dept }}</td>
+                        <td>{% for l in e.levels %}<span class="tag">{{ l }}</span>{% else %}—{% endfor %}</td>
+                        <td class="num">{{ e.stats.sessions }}</td>
+                        <td class="num">{{ e.stats.participants }}</td>
+                        <td>{{ ui.bar(e.stats.done ? e.stats.completion : null) }}</td>
+                        <td>{{ ui.bar(e.stats.done ? e.stats.success : null) }}</td>
+                        <td><a class="link" href="{{ path('pilot_dashboard', { region: e.region, departement: e.dept, etablissement: e.id }) }}">Cockpit →</a></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

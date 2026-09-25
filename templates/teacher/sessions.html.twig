@@ -1,0 +1,46 @@
+{% extends 'layouts/portal.html.twig' %}
+{% import '_macros.html.twig' as ui %}
+
+{% block page_title %}Mes sessions{% endblock %}
+{% block page_subtitle %}Vos sessions Saferoads : code, QR Code, statut et résultats. Les codes sont attribués par AC.{% endblock %}
+
+{% block content %}
+<section class="panel" data-controller="filter">
+    <div class="panel-head">
+        <h2>{{ sessions|length }} sessions</h2>
+        <div class="chips" role="group" aria-label="Filtrer par statut">
+            <button type="button" class="chip is-active" data-action="filter#show" data-filter-mode-param="all">Toutes</button>
+            <button type="button" class="chip" data-action="filter#show" data-filter-mode-param="planifiee">Planifiées</button>
+            <button type="button" class="chip" data-action="filter#show" data-filter-mode-param="en_cours">En cours</button>
+            <button type="button" class="chip" data-action="filter#show" data-filter-mode-param="terminee">Terminées</button>
+        </div>
+    </div>
+
+    <div class="table-wrap">
+        <table class="data">
+            <thead>
+                <tr>
+                    <th>Code</th><th>Classe</th><th>Date</th><th>Parcours</th><th>Campagne</th>
+                    <th class="num">Participants</th><th>Complétion</th><th>Statut</th><th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in sessions %}
+                    <tr data-filter-target="item" data-mode="{{ s.status }}" style="--i: {{ loop.index0 }}">
+                        <td><strong class="mono">{{ s.code }}</strong></td>
+                        <td>{{ s.class }}</td>
+                        <td>{{ s.date|date('d/m/Y H:i') }}</td>
+                        <td>{{ s.path }}</td>
+                        <td>{{ campaigns[s.campaign].name }}</td>
+                        <td class="num">{{ s.participants ?: '—' }}</td>
+                        <td>{{ ui.bar(s.completion) }}</td>
+                        <td>{{ ui.status(s) }}</td>
+                        <td><a href="{{ path('teacher_session', { code: s.code }) }}" class="link">{{ s.status == 'terminee' ? 'Résultats' : 'QR Code' }} →</a></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <p class="empty" data-filter-target="empty" hidden>Aucune session avec ce statut.</p>
+</section>
+{% endblock %}

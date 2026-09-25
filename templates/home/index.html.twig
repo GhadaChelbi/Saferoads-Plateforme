@@ -1,0 +1,242 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Saferoads — Plateforme professionnelle{% endblock %}
+
+{% block body %}
+<div data-controller="reveal">
+{# ======================= Navigation ======================= #}
+<nav class="nav" data-controller="nav">
+    <div class="nav-inner">
+        <a href="{{ path('app_home') }}" class="brand">
+            <span class="brand-mark" aria-hidden="true"><span class="light"><i></i><i></i><i></i></span></span>
+            <span>Saferoads <small>Plateforme professionnelle</small></span>
+        </a>
+        <div class="nav-links">
+            <a href="#plateforme">La plateforme</a>
+            <a href="#profils">Pour qui ?</a>
+            <a href="#fonctionnement">Fonctionnement</a>
+            <a href="#chiffres">Chiffres clés</a>
+        </div>
+        {% if app.user %}
+            <a href="{{ path('app_space') }}" class="btn btn-primary btn-sm">Mon espace</a>
+        {% else %}
+            <a href="{{ path('app_login') }}" class="btn btn-primary btn-sm">Se connecter</a>
+        {% endif %}
+    </div>
+</nav>
+
+{# ======================= Bannière ======================= #}
+<header class="hero" data-controller="parallax" data-action="pointermove->parallax#move pointerleave->parallax#reset">
+    <div class="hero-glow" aria-hidden="true"></div>
+
+    {# Panneaux de signalisation qui flottent en arrière-plan #}
+    <div class="signs" aria-hidden="true">
+        {% for sign in ['⚠️', '🛑', '🚸', '⛔', '🅿️', '🚲', '↪️', '🚧'] %}
+            <span style="--i: {{ loop.index0 }}">{{ sign }}</span>
+        {% endfor %}
+    </div>
+
+    <div class="hero-inner">
+        <div class="hero-text">
+            <span class="eyebrow"><span class="live-dot"></span> Campagne « Rentrée sécurité routière 2026 » en cours</span>
+            {# Titre : les mots montent un par un, puis la fin de phrase change en boucle #}
+            <h1 class="headline">
+                {% for word in ['La', 'sécurité', 'routière', 'en', 'classe,'] %}<span class="w" style="--i: {{ loop.index0 }}">{{ word }}</span> {% endfor %}<br>
+                <span class="w rotator" style="--i: 5"
+                      data-controller="rotator"
+                      data-rotator-words-value="{{ ['simplement.', 'avec Saferoads.', 'mesurée.', 'bien préparée.']|json_encode|e('html_attr') }}">
+                    <span class="accent" data-rotator-target="word">simplement.</span>
+                </span>
+            </h1>
+            <p class="lead">
+                Le portail professionnel du dispositif Saferoads : sessions en classe, ressources pédagogiques,
+                formation des enseignants, pilotage de l'impact et communication institutionnelle.
+            </p>
+            <div class="hero-cta">
+                <a href="{{ path('app_login') }}" class="btn btn-primary">Accéder à mon espace</a>
+                <a href="#plateforme" class="btn btn-ghost">Découvrir la plateforme →</a>
+            </div>
+            <dl class="hero-kpis reveal">
+                <div><dt>Établissements</dt><dd><span data-count="{{ stats.establishments }}">{{ stats.establishments }}</span></dd></div>
+                <div><dt>Élèves sensibilisés</dt><dd><span data-count="{{ stats.participants }}">{{ stats.participants }}</span></dd></div>
+                <div><dt>Complétion</dt><dd><span data-count="{{ stats.completion }}">{{ stats.completion }}</span><small>%</small></dd></div>
+            </dl>
+        </div>
+
+        {# Maquette : le serious game Saferoads sur tablette/téléphone #}
+        <div class="hero-visual" aria-hidden="true">
+            <div class="phone">
+                <div class="phone-notch"></div>
+                <div class="phone-screen">
+                    <div class="q-head">
+                        <span>Session {{ nextCode }}</span>
+                        <span class="q-timer" data-controller="countdown" data-countdown-from-value="20">0:20</span>
+                    </div>
+                    <div class="q-progress"><span></span></div>
+
+                    {# Panneau "Intersection avec priorité à droite" #}
+                    <svg class="q-sign" viewBox="0 0 100 90">
+                        <path d="M50 6 L95 84 H5 Z" fill="#fff" stroke="#d62828" stroke-width="9" stroke-linejoin="round"/>
+                        <path d="M50 34 V70 M36 52 H64" stroke="#111" stroke-width="7" stroke-linecap="round"/>
+                    </svg>
+
+                    <p class="q-text">À la prochaine intersection, je dois :</p>
+                    <ul class="q-answers">
+                        <li class="is-correct">
+                            <b>A</b> Céder le passage à droite <span>✓</span>
+                            <i class="tap"></i>
+                            <em class="q-points">Bonne réponse</em>
+                        </li>
+                        <li><b>B</b> Passer en priorité</li>
+                        <li><b>C</b> M'arrêter obligatoirement</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="float float-1"><span>📊</span> Session terminée <b>89 %</b></div>
+            <div class="float float-2"><span>🗣️</span> Débrief prêt : Distraction</div>
+            <div class="float float-3"><span>✓</span> Module MOOC validé</div>
+        </div>
+    </div>
+
+    {# Route animée en perspective #}
+    <svg class="road" viewBox="0 0 1200 160" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M430 0 H770 L1200 160 H0 Z" class="road-body"/>
+        <path d="M430 0 L0 160 M770 0 L1200 160" class="road-edge"/>
+        <path d="M600 0 V160" class="road-line"/>
+    </svg>
+    <span class="car car-1" aria-hidden="true">🚙</span>
+    <span class="car car-2" aria-hidden="true">🚌</span>
+</header>
+
+<main>
+    {# ======================= Les 4 blocs ======================= #}
+    <section class="section" id="plateforme">
+        <div class="section-head reveal">
+            <span class="kicker">La plateforme</span>
+            <h2>Quatre fonctions, un seul portail</h2>
+            <p>Saferoads fait jouer les élèves ; la plateforme organise, restitue et forme.</p>
+        </div>
+        <div class="modes modes-4 reveal">
+            {% for b in [
+                { icon: '🎮', cls: 'duel',   title: 'Sessions',      text: 'Codes session, QR Codes, accompagnement des séances et résultats immédiatement exploitables.' },
+                { icon: '📚', cls: 'defi',   title: 'Pédagogie',     text: 'Ressources pour préparer, introduire, débriefer et approfondir, et un MOOC pour les enseignants.' },
+                { icon: '🧭', cls: 'examen', title: 'Pilotage',      text: 'KPIs, lecture territoriale, campagnes et reporting exportable pour Saferoads et la DSR.' },
+                { icon: '📨', cls: 'duel',   title: 'Communication', text: 'Publications DSR / Saferoads vers les enseignants, notifications et suivi de lecture.' },
+            ] %}
+                <article class="mode-card" data-controller="tilt" data-action="pointermove->tilt#move pointerleave->tilt#reset">
+                    <span class="mode-icon mode-icon-{{ b.cls }}">{{ b.icon }}</span>
+                    <h3>{{ b.title }}</h3>
+                    <p>{{ b.text }}</p>
+                </article>
+            {% endfor %}
+        </div>
+    </section>
+
+    {# ======================= Profils ======================= #}
+    <section class="section" id="profils">
+        <div class="section-head reveal">
+            <span class="kicker">Pour qui ?</span>
+            <h2>Un espace pour chaque profil</h2>
+            <p>Chacun ne voit que le périmètre strictement nécessaire à sa fonction.</p>
+        </div>
+        <div class="modes reveal">
+            {% for p in [
+                { icon: '👩‍🏫', title: 'Enseignant', sees: ['Ses sessions et QR Codes', 'Les résultats de ses classes', 'Ressources, MOOC et messages'], not: 'Pas les autres classes ni les statistiques globales' },
+                { icon: '🏫', title: "Chef d'établissement", sees: ['Les enseignants de son établissement', 'Classes et sessions', "L'état d'utilisation du dispositif"], not: "Pas les autres établissements" },
+                { icon: '🧭', title: 'Saferoads / DSR', sees: ['Statistiques de pilotage', 'Territoires et campagnes', 'Reporting et communication'], not: "Jamais de données nominatives d'élèves" },
+            ] %}
+                <article class="mode-card profile-card" data-controller="tilt" data-action="pointermove->tilt#move pointerleave->tilt#reset">
+                    <span class="mode-icon mode-icon-duel">{{ p.icon }}</span>
+                    <h3>{{ p.title }}</h3>
+                    <ul class="checklist">
+                        {% for s in p.sees %}<li>✓ {{ s }}</li>{% endfor %}
+                    </ul>
+                    <p class="profile-not">🔒 {{ p.not }}</p>
+                </article>
+            {% endfor %}
+        </div>
+    </section>
+
+    {# ======================= Fil rouge ======================= #}
+    <section class="section" id="fonctionnement">
+        <div class="section-head reveal">
+            <span class="kicker">Fonctionnement</span>
+            <h2>Du jeu à l'impact</h2>
+        </div>
+        <ol class="flow reveal">
+            {% for step in [
+                ['🎮', 'Saferoads', 'fait jouer et produit les données pédagogiques'],
+                ['🗂️', 'La plateforme', 'organise, restitue et forme'],
+                ['👩‍🏫', "L'enseignant", 'prépare, utilise et débriefe'],
+                ['🧭', 'Saferoads / DSR', 'pilote, analyse et communique'],
+                ['📈', 'Le dispositif', 'mesure et prolonge son impact'],
+            ] %}
+                <li style="--i: {{ loop.index0 }}">
+                    <span class="flow-icon" aria-hidden="true">{{ step[0] }}</span>
+                    <strong>{{ step[1] }}</strong>
+                    <span>{{ step[2] }}</span>
+                </li>
+            {% endfor %}
+        </ol>
+    </section>
+
+    {# ======================= Chiffres clés (agrégés) ======================= #}
+    <section class="section" id="chiffres">
+        <div class="section-head reveal">
+            <span class="kicker">Chiffres clés</span>
+            <h2>Le dispositif en quelques chiffres</h2>
+            <p>Données nationales agrégées de la rentrée 2026 — aucun classement d'établissement.</p>
+        </div>
+        <div class="stats reveal">
+            <article class="stat" data-controller="tilt" data-action="pointermove->tilt#move pointerleave->tilt#reset">
+                <span class="stat-label">Sessions réalisées</span>
+                <span class="stat-value"><span data-count="{{ stats.done }}">{{ stats.done }}</span></span>
+            </article>
+            <article class="stat" data-controller="tilt" data-action="pointermove->tilt#move pointerleave->tilt#reset">
+                <span class="stat-label">Élèves sensibilisés</span>
+                <span class="stat-value"><span data-count="{{ stats.participants }}">{{ stats.participants }}</span></span>
+            </article>
+            <article class="stat" data-controller="tilt" data-action="pointermove->tilt#move pointerleave->tilt#reset">
+                <span class="stat-label">Enseignants engagés</span>
+                <span class="stat-value"><span data-count="{{ stats.teachers }}">{{ stats.teachers }}</span></span>
+            </article>
+            <article class="stat" data-controller="tilt" data-action="pointermove->tilt#move pointerleave->tilt#reset">
+                <span class="stat-label">Taux de complétion</span>
+                <span class="stat-value"><span data-count="{{ stats.completion }}">{{ stats.completion }}</span><small>%</small></span>
+            </article>
+        </div>
+    </section>
+
+    {# ======================= Appel à l'action ======================= #}
+    <section class="section" id="acces">
+        <div class="cta-band reveal">
+            <span class="cta-car" aria-hidden="true">🚗</span>
+            <div>
+                <h2>Vous êtes enseignant, chef d'établissement ou membre de la DSR ?</h2>
+                <p>Connectez-vous avec votre compte professionnel pour accéder à votre espace.</p>
+            </div>
+            <div class="cta-actions">
+                <a href="{{ path('app_login') }}" class="store"><span class="store-icon">🔐</span><span><small>Compte professionnel</small>Se connecter</span></a>
+            </div>
+        </div>
+    </section>
+</main>
+
+{# ======================= Pied de page ======================= #}
+<footer class="footer">
+    <div class="footer-inner reveal">
+        <div class="brand">
+            <span class="brand-mark" aria-hidden="true"><span class="light"><i></i><i></i><i></i></span></span>
+            <span>Saferoads <small>Plateforme professionnelle</small></span>
+        </div>
+        <nav class="footer-links">
+            <a href="#plateforme">La plateforme</a>
+            <a href="#profils">Pour qui ?</a>
+            <a href="{{ path('app_login') }}">Connexion</a>
+        </nav>
+        <p class="footnote">© {{ 'now'|date('Y') }} Saferoads · Données de démonstration · Hébergement en France · Aucune donnée nominative d'élève</p>
+    </div>
+</footer>
+</div>
+{% endblock %}

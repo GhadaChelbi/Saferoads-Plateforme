@@ -1,0 +1,40 @@
+{% extends 'layouts/portal.html.twig' %}
+{% import '_macros.html.twig' as ui %}
+
+{% block breadcrumb %}<a href="{{ path('school_dashboard') }}" class="crumb">← {{ establishment.name }}</a>{% endblock %}
+{% block page_title %}Sessions de l'établissement{% endblock %}
+{% block page_subtitle %}Classes et sessions de {{ establishment.name }} uniquement.{% endblock %}
+
+{% block content %}
+<section class="panel" data-controller="filter">
+    <div class="panel-head">
+        <h2>{{ sessions|length }} sessions</h2>
+        <div class="chips" role="group" aria-label="Filtrer par statut">
+            <button type="button" class="chip is-active" data-action="filter#show" data-filter-mode-param="all">Toutes</button>
+            <button type="button" class="chip" data-action="filter#show" data-filter-mode-param="planifiee">Planifiées</button>
+            <button type="button" class="chip" data-action="filter#show" data-filter-mode-param="terminee">Terminées</button>
+        </div>
+    </div>
+    <div class="table-wrap">
+        <table class="data">
+            <thead><tr><th>Code</th><th>Classe</th><th>Enseignant</th><th>Date</th><th>Campagne</th><th class="num">Participants</th><th>Complétion</th><th>Réussite</th><th>Statut</th></tr></thead>
+            <tbody>
+                {% for s in sessions %}
+                    <tr data-filter-target="item" data-mode="{{ s.status }}" style="--i: {{ loop.index0 }}">
+                        <td class="mono">{{ s.code }}</td>
+                        <td><strong>{{ s.class }}</strong></td>
+                        <td>{{ teachers[s.teacher].name }}</td>
+                        <td>{{ s.date|date('d/m/Y') }}</td>
+                        <td>{{ campaigns[s.campaign].name }}</td>
+                        <td class="num">{{ s.participants ?: '—' }}</td>
+                        <td>{{ ui.bar(s.completion) }}</td>
+                        <td>{{ ui.bar(s.success) }}</td>
+                        <td>{{ ui.status(s) }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <p class="empty" data-filter-target="empty" hidden>Aucune session avec ce statut.</p>
+</section>
+{% endblock %}
